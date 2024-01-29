@@ -8,30 +8,81 @@ public abstract class Algorithm
         Cars = cars;
     }
 
-    public List<Goal> Goals { get; }
+    protected List<Goal> Goals { get; }
 
-    public List<Car> Cars { get; }
+    protected List<Car> Cars { get; }
 
-    public abstract List<Goal> GetOptimalCoalitionStructure();
+    public abstract List<List<Goal>> GetOptimalCoalitionStructure();
 
-    static IEnumerable<List<int>> GetSubsetsOfSize(List<int> cars, int size)
+    protected double CalculateCoalitionValue(List<Goal> goals)
     {
-        int n = cars.Length;
+        var filteredCars = Cars
+            .Where(car => car.Capacity >= goals.Count).ToList();
 
-        for (int i = 0; i < (1 << n); i++)
+        var cityPenality = (goals.Select(goal => goal.OriginCity).Distinct().Count() +
+                            goals.Select(goal => goal.DestinationCity).Distinct().Count() - 2) * 1000000;
+        
+        if(filteredCars.Count > 0)
         {
-            if (CountBits(i) == size)
+            var minCar = filteredCars.MinBy(car => car.Price);
+            foreach (var goal in goals)
             {
-                List<int> subset = new List<int>();
-                for (int j = 0; j < n; j++) 
-                {
-                    if ((i & (1 << j)) != 0)
-                    {
-                        subset.Add(array[j]);
-                    }
-                }
-                yield return subset;
+                goal.Car = minCar;
             }
+            return (minCar.Price / goals.Count) + cityPenality;
+        }
+        return double.MaxValue;
+
+        
+
+        /*
+        var carsOccupation = new Dictionary<Car, int>();
+
+        foreach (var goal in goals)
+        {
+            var bestAvailableCar = Cars.Where(v => v.StillFree).MinBy(v => v.Price); ;
+
+            if (bestAvailableCar != null)
+            {
+                carsOccupation.TryAdd(bestAvailableCar, 0);
+                carsOccupation[bestAvailableCar]++;
+                bestAvailableCar.Occupancy++;
+            }
+        }
+
+        var sum = 0;
+        foreach (var kvp  in carsOccupation)
+        {
+            sum += kvp.Key.Price / kvp.Value;
+            kvp.Key.Occupancy = 0;
+        }
+        return sum;
+
+        */
+
+    }
+
+    protected List<List<Goal>> GetSubsetsOfSize(int size)
+    {
+        var subsets = new List<List<Goal>>();
+        GetSubsetsOfSizeRecursive(size, 0, [], subsets);
+        return subsets;
+    }
+
+    private void GetSubsetsOfSizeRecursive(int size, int index, IList<Goal> currentSubset, ICollection<List<Goal>> subsets)
+    {
+        if (size == 0)
+        {
+            subsets.Add([..currentSubset]);
+            return;
+        }
+
+        for (var i = index; i < Goals.Count; i++)
+        {
+            //if ((currentSubset.Count == 0) || (currentSubset[0].OriginCity == Goals[i].OriginCity && currentSubset[0].DestinationCity == Goals[i].DestinationCity))
+            currentSubset.Add(Goals[i]);
+            GetSubsetsOfSizeRecursive(size - 1, i + 1, currentSubset, subsets);
+            currentSubset.RemoveAt(currentSubset.Count - 1);
         }
     }
 }

@@ -5,46 +5,50 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
 {
     public CoalitionStructureGenerationAlgorithm(List<Goal> goals, List<Car> cars) : base(goals, cars) {}
 
-    public override List<Goal> GetOptimalCoalitionStructure()
+    private List<List<Goal>> GetRecursiveCoalitionStructure(Dictionary<List<Goal>, List<List<Goal>>> partitions, List<List<Goal>> bestCoalitions)
     {
-        List<Goal> optimalCoalitionStructure = [..Goals];
-
-        for (int i = 0; i < optimalCoalitionStructure.Count; i++)
+        foreach (var coalition in new List<List<Goal>>(bestCoalitions))
         {
-            foreach (List<int> subset in GetSubsetsOfSize(Enumerable.Range(0, optimalCoalitionStructure.Count).ToList(), i + 1))
+            if (partitions[coalition].Count > 1)
             {
-                List<Goal> coalition = subset.Select(index => optimalCoalitionStructure[index]).ToList();
-                if (coalition.All(goal => goal.Car is not null))
+                bestCoalitions.Remove(coalition);
+                bestCoalitions.AddRange(GetRecursiveCoalitionStructure(partitions, partitions[coalition]));
+            }
+        }
+        return bestCoalitions;
+    }
+
+    public override List<List<Goal>> GetOptimalCoalitionStructure()
+    {
+        var valuesOfCoalitions = new Dictionary<List<Goal>, double>(new ListEqualityComparer<Goal>());
+        var valuesOfBestCoalitions = new Dictionary<List<Goal>, double>(new ListEqualityComparer<Goal>());
+        var partitionOfBestCoalitions = new Dictionary<List<Goal>, List<List<Goal>>>(new ListEqualityComparer<Goal>());
+        for (var i = 1; i <= Goals.Count; i++)
+        {
+            foreach (var subset in GetSubsetsOfSize(i))
+            {
+                var subsetCopie = subset.ToList();
+                valuesOfCoalitions.Add(subsetCopie, CalculateCoalitionValue(subsetCopie));
+                valuesOfBestCoalitions.Add(subsetCopie, CalculateCoalitionValue(subsetCopie));
+                partitionOfBestCoalitions.Add(subsetCopie, [subsetCopie]);
+
+                for (var j = 1; j < subsetCopie.Count; j++)
                 {
-                    int totalCost = coalition.Sum(goal => goal.Car!.Price);
-                    if (totalCost < optimalCoalitionStructure.Sum(goal => goal.Car!.Price))
+                    var firstHalf = subset.Take(j).ToList();
+                    var secondHalf = subset.Skip(j).ToList();
+
+                    if (valuesOfCoalitions[firstHalf] + valuesOfCoalitions[secondHalf] < valuesOfBestCoalitions[subsetCopie])
                     {
-                        optimalCoalitionStructure = coalition;
+                        partitionOfBestCoalitions[subsetCopie] = [firstHalf, secondHalf];
+                        valuesOfBestCoalitions[subsetCopie] =
+                            CalculateCoalitionValue(firstHalf) + CalculateCoalitionValue(secondHalf);
                     }
                 }
             }
         }
 
-        return optimalCoalitionStructure;
+        return GetRecursiveCoalitionStructure(partitionOfBestCoalitions, [Goals]);
     }
 
-    private static IEnumerable<IEnumerable<int>> GetSubsetsOfSize(List<int> cars, int size)
-    {
-        if (size == 0)
-        {
-            yield return Enumerable.Empty<int>();
-        }
-        else
-        {
-            for (int i = 0; i < cars.Count; i++)
-            {
-                int car = cars[i];
-                foreach (List<int> subset in GetSubsetsOfSize(cars.Skip(i + 1).ToList(), size - 1))
-                {
-                    subset.Insert(0, car);
-                    yield return subset;
-                }
-            }
-        }
-    }
+    
 }
