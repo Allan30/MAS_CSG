@@ -20,34 +20,43 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
 
     public override List<List<Goal>> GetOptimalCoalitionStructure()
     {
-        var valuesOfCoalitions = new Dictionary<List<Goal>, double>(new ListEqualityComparer<Goal>());
         var valuesOfBestCoalitions = new Dictionary<List<Goal>, double>(new ListEqualityComparer<Goal>());
         var partitionOfBestCoalitions = new Dictionary<List<Goal>, List<List<Goal>>>(new ListEqualityComparer<Goal>());
+        var carSelectionForCoalitions = new Dictionary<List<Goal>, Car>(new ListEqualityComparer<Goal>());
         for (var i = 1; i <= Goals.Count; i++)
         {
-            foreach (var subset in GetSubsetsOfSize(i))
+            foreach (var subset in GetSubsetsOfSize(i, Goals))
             {
-                var subsetCopie = subset.ToList();
-                valuesOfCoalitions.Add(subsetCopie, CalculateCoalitionValue(subsetCopie));
-                valuesOfBestCoalitions.Add(subsetCopie, CalculateCoalitionValue(subsetCopie));
-                partitionOfBestCoalitions.Add(subsetCopie, [subsetCopie]);
-
-                for (var j = 1; j < subsetCopie.Count; j++)
+                carSelectionForCoalitions.Add(subset, GetMinCar(subset));
+                valuesOfBestCoalitions.Add(subset, CalculateCoalitionValue(subset));
+                partitionOfBestCoalitions.Add(subset, [subset]);
+                    
+                if (i == 1) continue;
+                foreach (var halves in GetAllPossibilitiesToSplitListIntoTwoLists(subset))
                 {
-                    var firstHalf = subset.Take(j).ToList();
-                    var secondHalf = subset.Skip(j).ToList();
-
-                    if (valuesOfCoalitions[firstHalf] + valuesOfCoalitions[secondHalf] < valuesOfBestCoalitions[subsetCopie])
+                    var firstHalf = halves[0];
+                    var secondHalf = halves[1];
+                    
+                    if (valuesOfBestCoalitions[firstHalf] + valuesOfBestCoalitions[secondHalf] < valuesOfBestCoalitions[subset])
                     {
-                        partitionOfBestCoalitions[subsetCopie] = [firstHalf, secondHalf];
-                        valuesOfBestCoalitions[subsetCopie] =
-                            CalculateCoalitionValue(firstHalf) + CalculateCoalitionValue(secondHalf);
+                        partitionOfBestCoalitions[subset] = [firstHalf, secondHalf];
+                        valuesOfBestCoalitions[subset] =
+                            valuesOfBestCoalitions[firstHalf] + valuesOfBestCoalitions[secondHalf];
                     }
                 }
             }
         }
 
-        return GetRecursiveCoalitionStructure(partitionOfBestCoalitions, [Goals]);
+        var bestCoalitions = GetRecursiveCoalitionStructure(partitionOfBestCoalitions, [Goals]);
+        foreach (var coalition in bestCoalitions)
+        {
+            foreach (var goal in coalition)
+            {
+                goal.Car = carSelectionForCoalitions[coalition];
+            }
+        }
+
+        return bestCoalitions;
     }
 
     
