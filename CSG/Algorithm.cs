@@ -68,7 +68,12 @@ public abstract class Algorithm
     protected List<List<List<Goal>>> GetAllHalves(List<Goal> goals)
     {
         var result = new List<List<List<Goal>>>();
-        if (goals.Count == 2) return [[[goals[0]], [goals[1]]]];
+
+        if (goals.Count == 2)
+        {
+            return [[[goals[0]], [goals[1]]]];
+        }
+
         for (var size = 1; size <= goals.Count / 2; size++)
         {
             foreach (var subset in GetSubsetsOfSize(size, goals))
