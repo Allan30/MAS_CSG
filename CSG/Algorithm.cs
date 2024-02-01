@@ -15,17 +15,9 @@ public abstract class Algorithm
     public abstract List<List<Goal>> GetOptimalCoalitionStructure();
 
     protected Car? GetMinCar(List<Goal> goals)
-    {
-        var filteredCars = Cars
+        => Cars
             .Where(car => car.Capacity >= goals.Count)
-            .ToList();
-        
-        if (filteredCars.Count > 0)
-        {
-            return filteredCars.MinBy(car => car.Price);
-        }
-        return null;
-    }
+            .MinBy(car => car.Price);
 
     protected double CalculateCoalitionValue(List<Goal> goals)
     {
