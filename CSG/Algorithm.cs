@@ -40,7 +40,6 @@ public abstract class Algorithm
             return carPricePenalty + minutePenalty + cityPenalty;
         }
         return double.MaxValue;
-
     }
 
     protected List<List<Goal>> GetSubsetsOfSize(int size, List<Goal> goals)
@@ -66,7 +65,7 @@ public abstract class Algorithm
         }
     }
 
-    protected List<List<List<Goal>>> GetAllPossibilitiesToSplitListIntoTwoLists(List<Goal> goals)
+    protected List<List<List<Goal>>> GetAllHalves(List<Goal> goals)
     {
         var result = new List<List<List<Goal>>>();
         if (goals.Count == 2) return [[[goals[0]], [goals[1]]]];
