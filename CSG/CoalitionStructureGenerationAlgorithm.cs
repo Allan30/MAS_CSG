@@ -20,7 +20,7 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
 
     public override List<List<Goal>> GetOptimalCoalitionStructure()
     {
-        var equalityComparer = new ListEqualityComparer<Goal>();
+        var equalityComparer = new EnumerableEqualityComparer<Goal>();
         var valuesOfBestCoalitions = new Dictionary<List<Goal>, double>(equalityComparer);
         var partitionOfBestCoalitions = new Dictionary<List<Goal>, List<List<Goal>>>(equalityComparer);
         var carSelectionForCoalitions = new Dictionary<List<Goal>, Car?>(equalityComparer);

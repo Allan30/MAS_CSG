@@ -50,7 +50,7 @@ public abstract class Algorithm
         return subsets;
     }
 
-    private void GetSubsetsOfSizeRecursive(int size, int index, List<Goal> goals, IList<Goal> currentSubset, ICollection<List<Goal>> subsets)
+    private void GetSubsetsOfSizeRecursive(int size, int index, List<Goal> goals, List<Goal> currentSubset, List<List<Goal>> subsets)
     {
         if (size == 0)
         {
@@ -60,7 +60,6 @@ public abstract class Algorithm
 
         for (var i = index; i < goals.Count; i++)
         {
-            //if ((currentSubset.Count == 0) || (currentSubset[0].OriginCity == Goals[i].OriginCity && currentSubset[0].DestinationCity == Goals[i].DestinationCity))
             currentSubset.Add(goals[i]);
             GetSubsetsOfSizeRecursive(size - 1, i + 1, goals,currentSubset, subsets);
             currentSubset.RemoveAt(currentSubset.Count - 1);

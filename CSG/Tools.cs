@@ -1,16 +1,16 @@
 ﻿namespace CSG;
 
-public class ListEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> where T : class
+public class EnumerableEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> where T : class
 {
-    public bool Equals(IEnumerable<T> x, IEnumerable<T> y)
+    public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
     {
-        if (ReferenceEquals(x, y))
-        {
-            return true;
-        }
         if (x is null || y is null)
         {
             return false;
+        }
+        if (ReferenceEquals(x, y))
+        {
+            return true;
         }
         return x.SequenceEqual(y, EqualityComparer<T>.Default);
     }
