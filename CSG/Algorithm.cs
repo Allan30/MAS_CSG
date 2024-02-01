@@ -29,15 +29,15 @@ public abstract class Algorithm
 
     protected double CalculateCoalitionValue(List<Goal> goals)
     {
-        var cityPenality = (goals.Select(goal => goal.OriginCity).Distinct().Count() +
+        var cityPenalty = (goals.Select(goal => goal.OriginCity).Distinct().Count() +
                             goals.Select(goal => goal.DestinationCity).Distinct().Count() - 2) * 1_000_000;
 
-        var minutePenality = goals.Max(goal => goal.DepartureTime).Subtract(goals.Min(goal => goal.DepartureTime)).TotalMinutes * (goals.Count-1);
+        var minutePenalty = goals.Max(goal => goal.DepartureTime).Subtract(goals.Min(goal => goal.DepartureTime)).TotalMinutes * (goals.Count-1);
         var minCar = GetMinCar(goals);
         if (minCar is not null)
         {
-            var carPricePenality = minCar.Price / goals.Count;
-            return carPricePenality + minutePenality + cityPenality;
+            var carPricePenalty = minCar.Price / goals.Count;
+            return carPricePenalty + minutePenalty + cityPenalty;
         }
         return double.MaxValue;
 
