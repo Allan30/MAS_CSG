@@ -5,7 +5,7 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
 {
     public CoalitionStructureGenerationAlgorithm(List<Goal> goals, List<Car> cars) : base(goals, cars) {}
 
-    private List<List<Goal>> GetRecursiveCoalitionStructure(Dictionary<List<Goal>, List<List<Goal>>> partitions, List<List<Goal>> bestCoalitions)
+    private static List<List<Goal>> GetRecursiveCoalitionStructure(Dictionary<List<Goal>, List<List<Goal>>> partitions, List<List<Goal>> bestCoalitions)
     {
         foreach (var coalition in new List<List<Goal>>(bestCoalitions))
         {
@@ -22,7 +22,7 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
     {
         var valuesOfBestCoalitions = new Dictionary<List<Goal>, double>(new ListEqualityComparer<Goal>());
         var partitionOfBestCoalitions = new Dictionary<List<Goal>, List<List<Goal>>>(new ListEqualityComparer<Goal>());
-        var carSelectionForCoalitions = new Dictionary<List<Goal>, Car>(new ListEqualityComparer<Goal>());
+        var carSelectionForCoalitions = new Dictionary<List<Goal>, Car?>(new ListEqualityComparer<Goal>());
         for (var i = 1; i <= Goals.Count; i++)
         {
             foreach (var subset in GetSubsetsOfSize(i, Goals))

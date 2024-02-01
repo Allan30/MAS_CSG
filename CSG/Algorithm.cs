@@ -14,15 +14,11 @@ public abstract class Algorithm
 
     public abstract List<List<Goal>> GetOptimalCoalitionStructure();
 
-    protected List<Goal> GetExcluded(List<Goal> list1, List<Goal> list2)
-    {
-        return list1.Where(goal => !list2.Contains(goal)).ToList();
-    }
-
     protected Car? GetMinCar(List<Goal> goals)
     {
         var filteredCars = Cars
-            .Where(car => car.Capacity >= goals.Count).ToList();
+            .Where(car => car.Capacity >= goals.Count)
+            .ToList();
         
         if (filteredCars.Count > 0)
         {
@@ -34,14 +30,14 @@ public abstract class Algorithm
     protected double CalculateCoalitionValue(List<Goal> goals)
     {
         var cityPenality = (goals.Select(goal => goal.OriginCity).Distinct().Count() +
-                            goals.Select(goal => goal.DestinationCity).Distinct().Count() - 2) * 1000000;
+                            goals.Select(goal => goal.DestinationCity).Distinct().Count() - 2) * 1_000_000;
 
         var minutePenality = goals.Max(goal => goal.DepartureTime).Subtract(goals.Min(goal => goal.DepartureTime)).TotalMinutes * (goals.Count-1);
         Console.WriteLine(goals.Max(goal => goal.DepartureTime).ToString() + " - "+ goals.Min(goal => goal.DepartureTime).ToString() + " "+ minutePenality);
         var minCar = GetMinCar(goals);
-        if(minCar != null)
+        if (minCar is not null)
         {
-            var carPricePenality = GetMinCar(goals).Price / goals.Count;
+            var carPricePenality = minCar.Price / goals.Count;
             return carPricePenality + minutePenality + cityPenality;
         }
         return double.MaxValue;
@@ -80,9 +76,10 @@ public abstract class Algorithm
         {
             foreach (var subset in GetSubsetsOfSize(size, goals))
             {
-                var twoListToAdd = new List<List<Goal>>();
-                twoListToAdd.Add(subset);
-                twoListToAdd.Add(goals.Where(goal => !subset.Contains(goal)).ToList());
+                List<List<Goal>> twoListToAdd = [
+                    subset,
+                    goals.Where(goal => !subset.Contains(goal)).ToList()
+                ];
                 result.Add(twoListToAdd);
             }
         }
