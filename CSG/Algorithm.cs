@@ -33,7 +33,6 @@ public abstract class Algorithm
                             goals.Select(goal => goal.DestinationCity).Distinct().Count() - 2) * 1_000_000;
 
         var minutePenality = goals.Max(goal => goal.DepartureTime).Subtract(goals.Min(goal => goal.DepartureTime)).TotalMinutes * (goals.Count-1);
-        Console.WriteLine(goals.Max(goal => goal.DepartureTime).ToString() + " - "+ goals.Min(goal => goal.DepartureTime).ToString() + " "+ minutePenality);
         var minCar = GetMinCar(goals);
         if (minCar is not null)
         {

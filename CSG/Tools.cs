@@ -1,13 +1,21 @@
 ﻿namespace CSG;
 
-class ListEqualityComparer<T> : IEqualityComparer<List<T>> where T : class
+public class ListEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> where T : class
 {
-    public bool Equals(List<T> x, List<T> y)
+    public bool Equals(IEnumerable<T> x, IEnumerable<T> y)
     {
+        if (ReferenceEquals(x, y))
+        {
+            return true;
+        }
+        if (x is null || y is null)
+        {
+            return false;
+        }
         return x.SequenceEqual(y, EqualityComparer<T>.Default);
     }
 
-    public int GetHashCode(List<T> obj)
+    public int GetHashCode(IEnumerable<T> obj)
     {
         int hash = 17;
         foreach (var item in obj)

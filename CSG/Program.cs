@@ -1,6 +1,4 @@
-﻿using Bogus;
-
-namespace CSG;
+﻿namespace CSG;
 
 public class Program
 {
