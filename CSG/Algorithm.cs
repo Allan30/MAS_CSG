@@ -15,47 +15,23 @@ public abstract class Algorithm
     public abstract List<List<Goal>> GetOptimalCoalitionStructure();
 
     protected Car? GetMinCar(List<Goal> goals)
-    {
-        var filteredCars = Cars
+        => Cars
             .Where(car => car.Capacity >= goals.Count)
-            .ToList();
-        
-        if (filteredCars.Count > 0)
-        {
-            return filteredCars.MinBy(car => car.Price);
-        }
-        return null;
-    }
+            .MinBy(car => car.Price);
 
     protected double CalculateCoalitionValue(List<Goal> goals)
     {
-        var cityPenality = (goals.Select(goal => goal.OriginCity).Distinct().Count() +
+        var cityPenalty = (goals.Select(goal => goal.OriginCity).Distinct().Count() +
                             goals.Select(goal => goal.DestinationCity).Distinct().Count() - 2) * 1_000_000;
 
-        var smokerPenalty = 0;
-        var thereIsSmoker = false;
-        foreach (var goal in goals)
-        {
-            if (!goal.IsSmoker)
-            {
-                smokerPenalty += goal.SmokerPenalty;
-            }
-            else
-            {
-                thereIsSmoker = true;
-            }
-        }
-        smokerPenalty = thereIsSmoker ? smokerPenalty : 0;
-
-        var minutePenality = goals.Max(goal => goal.DepartureTime).Subtract(goals.Min(goal => goal.DepartureTime)).TotalMinutes * (goals.Count-1);
+        var minutePenalty = goals.Max(goal => goal.DepartureTime).Subtract(goals.Min(goal => goal.DepartureTime)).TotalMinutes * (goals.Count-1);
         var minCar = GetMinCar(goals);
         if (minCar is not null)
         {
-            var carPricePenality = minCar.Price / goals.Count;
-            return carPricePenality + minutePenality + cityPenality;
+            var carPricePenalty = minCar.Price / goals.Count;
+            return carPricePenalty + minutePenalty + cityPenalty;
         }
         return double.MaxValue;
-
     }
 
     protected List<List<Goal>> GetSubsetsOfSize(int size, List<Goal> goals)
@@ -81,10 +57,15 @@ public abstract class Algorithm
         }
     }
 
-    protected List<List<List<Goal>>> GetAllPossibilitiesToSplitListIntoTwoLists(List<Goal> goals)
+    protected List<List<List<Goal>>> GetAllHalves(List<Goal> goals)
     {
         var result = new List<List<List<Goal>>>();
-        if (goals.Count == 2) return [[[goals[0]], [goals[1]]]];
+
+        if (goals.Count == 2)
+        {
+            return [[[goals[0]], [goals[1]]]];
+        }
+
         for (var size = 1; size <= goals.Count / 2; size++)
         {
             foreach (var subset in GetSubsetsOfSize(size, goals))

@@ -33,7 +33,7 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
                 partitionOfBestCoalitions.Add(subset, [subset]);
                     
                 if (i == 1) continue;
-                foreach (var halves in GetAllPossibilitiesToSplitListIntoTwoLists(subset))
+                foreach (var halves in GetAllHalves(subset))
                 {
                     var firstHalf = halves[0];
                     var secondHalf = halves[1];
