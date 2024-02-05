@@ -32,6 +32,21 @@ public abstract class Algorithm
         var cityPenality = (goals.Select(goal => goal.OriginCity).Distinct().Count() +
                             goals.Select(goal => goal.DestinationCity).Distinct().Count() - 2) * 1_000_000;
 
+        var smokerPenalty = 0;
+        var thereIsSmoker = false;
+        foreach (var goal in goals)
+        {
+            if (!goal.IsSmoker)
+            {
+                smokerPenalty += goal.SmokerPenalty;
+            }
+            else
+            {
+                thereIsSmoker = true;
+            }
+        }
+        smokerPenalty = thereIsSmoker ? smokerPenalty : 0;
+
         var minutePenality = goals.Max(goal => goal.DepartureTime).Subtract(goals.Min(goal => goal.DepartureTime)).TotalMinutes * (goals.Count-1);
         var minCar = GetMinCar(goals);
         if (minCar is not null)
