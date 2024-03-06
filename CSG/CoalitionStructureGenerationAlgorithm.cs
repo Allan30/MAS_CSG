@@ -3,6 +3,7 @@ namespace CSG;
 
 public class CoalitionStructureGenerationAlgorithm : Algorithm
 {
+    private readonly Dictionary<List<Goal>, List<List<Goal>>> _partitionOfBestCoalitions = new (EqualityComparer);
     public CoalitionStructureGenerationAlgorithm(List<Goal> goals, List<Car> cars) : base(goals, cars) {}
 
     private static List<List<Goal>> GetRecursiveCoalitionStructure(Dictionary<List<Goal>, List<List<Goal>>> partitions, List<List<Goal>> bestCoalitions)
@@ -18,19 +19,23 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
         return bestCoalitions;
     }
 
-    public override List<List<Goal>> GetOptimalCoalitionStructure()
+    public override List<List<Goal>> Start()
     {
-        var equalityComparer = new EnumerableEqualityComparer<Goal>();
-        var valuesOfBestCoalitions = new Dictionary<List<Goal>, double>(equalityComparer);
-        var partitionOfBestCoalitions = new Dictionary<List<Goal>, List<List<Goal>>>(equalityComparer);
-        var carSelectionForCoalitions = new Dictionary<List<Goal>, Car?>(equalityComparer);
+        SetOptimalCoalitionStructure();
+        SetCarOnBestCoalitionStructure();
+        return BestCoalitionStructure;
+    }
+    
+    private void SetOptimalCoalitionStructure()
+    {
+        
         for (var i = 1; i <= Goals.Count; i++)
         {
             foreach (var subset in GetSubsetsOfSize(i, Goals))
             {
-                carSelectionForCoalitions.Add(subset, GetMinCar(subset));
-                valuesOfBestCoalitions.Add(subset, CalculateCoalitionValue(subset));
-                partitionOfBestCoalitions.Add(subset, [subset]);
+                CarSelectionForCoalitions.Add(subset, GetMinCar(subset));
+                ValuesOfCoalitions.Add(subset, CalculateCoalitionValue(subset));
+                _partitionOfBestCoalitions.Add(subset, [subset]);
                     
                 if (i == 1) continue;
                 foreach (var halves in GetAllHalves(subset))
@@ -38,26 +43,16 @@ public class CoalitionStructureGenerationAlgorithm : Algorithm
                     var firstHalf = halves[0];
                     var secondHalf = halves[1];
                     
-                    if (valuesOfBestCoalitions[firstHalf] + valuesOfBestCoalitions[secondHalf] < valuesOfBestCoalitions[subset])
+                    if (ValuesOfCoalitions[firstHalf] + ValuesOfCoalitions[secondHalf] < ValuesOfCoalitions[subset])
                     {
-                        partitionOfBestCoalitions[subset] = [firstHalf, secondHalf];
-                        valuesOfBestCoalitions[subset] =
-                            valuesOfBestCoalitions[firstHalf] + valuesOfBestCoalitions[secondHalf];
+                        _partitionOfBestCoalitions[subset] = [firstHalf, secondHalf];
+                        ValuesOfCoalitions[subset] =
+                            ValuesOfCoalitions[firstHalf] + ValuesOfCoalitions[secondHalf];
                     }
                 }
             }
         }
-
-        var bestCoalitions = GetRecursiveCoalitionStructure(partitionOfBestCoalitions, [Goals]);
-        foreach (var coalition in bestCoalitions)
-        {
-            foreach (var goal in coalition)
-            {
-                goal.Car = carSelectionForCoalitions[coalition];
-            }
-        }
-
-        return bestCoalitions;
+        BestCoalitionStructure = GetRecursiveCoalitionStructure(_partitionOfBestCoalitions, [Goals]);
     }
 
     

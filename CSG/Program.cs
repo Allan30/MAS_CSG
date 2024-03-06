@@ -25,7 +25,7 @@ public class Program
 
         var algorithm = new CoalitionStructureGenerationAlgorithm(goals, cars);
 
-        var coalitions = algorithm.GetOptimalCoalitionStructure();
+        var coalitions = algorithm.Start();
 
         Console.WriteLine("=======================================================");
         foreach (var coalition in coalitions)

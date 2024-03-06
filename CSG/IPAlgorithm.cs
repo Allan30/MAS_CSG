@@ -2,26 +2,23 @@
 
 public class IPAlgorithm : Algorithm
 {
-    private static readonly EnumerableEqualityComparer<Goal> EqualityComparer = new();
-    private Dictionary<List<Goal>, Car?> CarSelectionForCoalitions = new(EqualityComparer);
-    private Dictionary<List<Goal>, double> ValuesOfCoalitions = new(EqualityComparer);
-    private Dictionary<List<int>, List<List<List<Goal>>>> IPSubSpacesCoalitions = new();
-    private Dictionary<List<int>, double> IPMinValuesOfBounds = new();
-
+    private readonly Dictionary<List<int>, List<List<List<Goal>>>> _ipSubSpacesCoalitions = new();
+    private readonly Dictionary<List<int>, double> _ipMinValuesOfBounds = new();
     
     public IPAlgorithm(List<Goal> goals, List<Car> cars) : base(goals, cars) {}
 
-    public List<List<Goal>> Start()
+    public override List<List<Goal>> Start()
     {
         CalculateCoalitionsValue();
-        FillCoalitionType();
-        return GetOptimalCoalitionStructure();
+        FillCoalitionType(); 
+        SetOptimalCoalitionStructure();
+        SetCarOnBestCoalitionStructure();
+        return BestCoalitionStructure;
     }
 
-
-    public override List<List<Goal>> GetOptimalCoalitionStructure()
+    private void SetOptimalCoalitionStructure()
     {
-        var sortedDict = from entry in IPMinValuesOfBounds orderby entry.Value ascending select entry;
+        var sortedDict = from entry in _ipMinValuesOfBounds orderby entry.Value ascending select entry;
         var minValue = double.MaxValue;
         var bestCoalitionStructure = new List<List<Goal>>();
         foreach (var (subspace, currentValue) in sortedDict)
@@ -37,14 +34,14 @@ public class IPAlgorithm : Algorithm
                 }
             }
         }
-        return bestCoalitionStructure;
+        BestCoalitionStructure = bestCoalitionStructure;
     }
 
     private List<List<Goal>> GetBestCoalitionStructureOfSubspace(List<int> subspace)
     {
         var coalitionStructure = new List<List<Goal>>();
         var valueOfBestCoalition = double.MaxValue;
-        foreach (var currentCoalitionStructure in IPSubSpacesCoalitions[subspace])
+        foreach (var currentCoalitionStructure in _ipSubSpacesCoalitions[subspace])
         {
             var currentValue = 0.0;
             foreach (var coalition in currentCoalitionStructure)
@@ -64,18 +61,6 @@ public class IPAlgorithm : Algorithm
         return coalitionStructure;
     }
 
-    private void CalculateCoalitionsValue()
-    {
-        for (var i = 1; i <= Goals.Count; i++)
-        {
-            foreach (var subset in GetSubsetsOfSize(i, Goals))
-            {
-                CarSelectionForCoalitions.Add(subset, GetMinCar(subset));
-                ValuesOfCoalitions.Add(subset, CalculateCoalitionValue(subset));
-            }
-        }
-    }
-
     private void FillCoalitionType()
     {
         foreach (var subset in GetAllSubsetsFollowingPartitions(Goals))
@@ -83,9 +68,9 @@ public class IPAlgorithm : Algorithm
             var key = subset.Select(s => s.Count).ToList();
             key.Sort();
 
-            if (!IPSubSpacesCoalitions.TryAdd(key, []))
+            if (!_ipSubSpacesCoalitions.TryAdd(key, []))
             {
-                IPSubSpacesCoalitions[key].Add(subset);
+                _ipSubSpacesCoalitions[key].Add(subset);
             }
 
             CalculateBound(key, subset);
@@ -95,11 +80,11 @@ public class IPAlgorithm : Algorithm
     private void CalculateBound(List<int> key, IEnumerable<List<Goal>> subset)
     {
         var value = subset.Select(s => ValuesOfCoalitions[s]).Sum();
-        if (!IPMinValuesOfBounds.TryAdd(key, value));
+        if (!_ipMinValuesOfBounds.TryAdd(key, value));
         {
-            if (value < IPMinValuesOfBounds[key])
+            if (value < _ipMinValuesOfBounds[key])
             {
-                IPMinValuesOfBounds[key] = value;
+                _ipMinValuesOfBounds[key] = value;
             }
         }
         
