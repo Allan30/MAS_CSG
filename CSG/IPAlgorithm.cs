@@ -2,8 +2,9 @@
 
 public class IPAlgorithm : Algorithm
 {
-    private readonly Dictionary<List<int>, List<List<List<Goal>>>> _ipSubSpacesCoalitions = new();
-    private readonly Dictionary<List<int>, double> _ipMinValuesOfBounds = new();
+    private static readonly ListEqualityComparer EqualityComparerInt = new();
+    private readonly Dictionary<List<int>, List<List<List<Goal>>>> _ipSubSpacesCoalitions = new(EqualityComparerInt);
+    private readonly Dictionary<List<int>, double> _ipMinValuesOfBounds = new(EqualityComparerInt);
     
     public IPAlgorithm(List<Goal> goals, List<Car> cars) : base(goals, cars) {}
 
@@ -63,12 +64,12 @@ public class IPAlgorithm : Algorithm
 
     private void FillCoalitionType()
     {
-        foreach (var subset in GetAllSubsetsFollowingPartitions(Goals))
+        foreach (var subset in PartitionGen(Goals))
         {
             var key = subset.Select(s => s.Count).ToList();
             key.Sort();
 
-            if (!_ipSubSpacesCoalitions.TryAdd(key, []))
+            if (!_ipSubSpacesCoalitions.TryAdd(key, [subset]))
             {
                 _ipSubSpacesCoalitions[key].Add(subset);
             }
@@ -77,7 +78,7 @@ public class IPAlgorithm : Algorithm
         }
     }
 
-    private void CalculateBound(List<int> key, IEnumerable<List<Goal>> subset)
+    private void CalculateBound(List<int> key, List<List<Goal>> subset)
     {
         var value = subset.Select(s => ValuesOfCoalitions[s]).Sum();
         if (!_ipMinValuesOfBounds.TryAdd(key, value));
@@ -89,25 +90,30 @@ public class IPAlgorithm : Algorithm
         }
         
     }
-
-    private static List<List<List<Goal>>> GetAllSubsetsFollowingPartitions(List<Goal> goals)
+    private static List<List<List<T>>> PartitionGen<T>(List<T> lst)
     {
-        if (goals.Count == 0)
+        var partitions = new List<List<List<T>>>();
+        if (lst.Count == 0)
         {
-            return [];
+            return [[]];
         }
 
-        var result = new List<List<List<Goal>>>();
-        for (var i = 1; i < goals.Count; i++)
+        var first = lst[0];
+        var smallerPartitions = PartitionGen(lst.Skip(1).ToList());
+
+        foreach (var smaller in smallerPartitions)
         {
-            foreach (var subset in GetAllSubsetsFollowingPartitions(goals[i..]))
+            for (var n = 0; n < smaller.Count; n++)
             {
-                var newSubset = new List<List<Goal>>(subset);
-                newSubset.AddRange([goals[..i]]);
-                result.Add(newSubset);
+                var newPartition = new List<List<T>>(smaller);
+                newPartition[n] = new List<T> { first }.Concat(newPartition[n]).ToList();
+                partitions.Add(newPartition);
             }
+            partitions.Add(new List<List<T>> { new() { first } }.Concat(smaller).ToList());
         }
 
-        return result;
+        return partitions;
     }
+
+    
 }

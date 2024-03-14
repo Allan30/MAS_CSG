@@ -23,14 +23,14 @@ public class Program
             new Goal("agent9", "Paris", "Lyon", new DateTime(2024, 12, 25, 10, 40, 00), DateTime.Now),
         ];
 
-        var algorithm = new CoalitionStructureGenerationAlgorithm(goals, cars);
+        var algorithm = new IPAlgorithm(goals, cars);
 
         var coalitions = algorithm.Start();
 
         Console.WriteLine("=======================================================");
         foreach (var coalition in coalitions)
         {
-            Console.WriteLine("Coalition for car " + coalition[0].Car.Name + ": ");
+            Console.WriteLine("Coalition for car " + coalition[0].Car?.Name + ": ");
             foreach (var agent in coalition)
             {
                 Console.WriteLine(agent.Name);
