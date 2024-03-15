@@ -1,10 +1,10 @@
 ﻿
 namespace CSG;
 
-public class CoalitionStructureGenerationAlgorithm : Algorithm
+public class DPAlgorithm : Algorithm
 {
     private readonly Dictionary<List<Goal>, List<List<Goal>>> _partitionOfBestCoalitions = new (EqualityComparer);
-    public CoalitionStructureGenerationAlgorithm(List<Goal> goals, List<Car> cars) : base(goals, cars) {}
+    public DPAlgorithm(List<Goal> goals, List<Car> cars) : base(goals, cars) {}
 
     private static List<List<Goal>> GetRecursiveCoalitionStructure(Dictionary<List<Goal>, List<List<Goal>>> partitions, List<List<Goal>> bestCoalitions)
     {

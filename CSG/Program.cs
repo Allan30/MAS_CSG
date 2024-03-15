@@ -1,4 +1,6 @@
-﻿namespace CSG;
+﻿using System.Diagnostics;
+
+namespace CSG;
 
 public class Program
 {
@@ -8,7 +10,7 @@ public class Program
         [
             new Car("car1", 90, 4),
             new Car("car2", 80, 3),
-            new Car("car3", 200, 5)
+            new Car("car3", 90, 5)
         ];
         List<Goal> goals =
         [
@@ -24,7 +26,7 @@ public class Program
         ];
 
         var algorithm = new IPAlgorithm(goals, cars);
-
+        
         var coalitions = algorithm.Start();
 
         Console.WriteLine("=======================================================");
