@@ -2,6 +2,11 @@
 
 public abstract class Algorithm
 {
+    protected List<List<Goal>> BestCoalitionStructure = [];
+    protected static readonly EnumerableEqualityComparer<Goal> EqualityComparer = new();
+    protected readonly Dictionary<List<Goal>, Car?> CarSelectionForCoalitions = new(EqualityComparer);
+    protected readonly Dictionary<List<Goal>, double> ValuesOfCoalitions = new(EqualityComparer);
+
     protected Algorithm(List<Goal> goals, List<Car> cars)
     {
         Goals = goals;
@@ -12,7 +17,7 @@ public abstract class Algorithm
 
     protected List<Car> Cars { get; }
 
-    public abstract List<List<Goal>> GetOptimalCoalitionStructure();
+    public abstract List<List<Goal>> Start();
 
     protected Car? GetMinCar(List<Goal> goals)
         => Cars
@@ -79,5 +84,28 @@ public abstract class Algorithm
         }
 
         return result;
+    }
+    
+    protected void SetCarOnBestCoalitionStructure()
+    {
+        foreach (var coalition in BestCoalitionStructure)
+        {
+            foreach (var goal in coalition)
+            {
+                goal.Car = CarSelectionForCoalitions[coalition];
+            }
+        }
+    }
+    
+    protected void CalculateCoalitionsValue()
+    {
+        for (var i = 1; i <= Goals.Count; i++)
+        {
+            foreach (var subset in GetSubsetsOfSize(i, Goals))
+            {
+                CarSelectionForCoalitions.Add(subset, GetMinCar(subset));
+                ValuesOfCoalitions.Add(subset, CalculateCoalitionValue(subset));
+            }
+        }
     }
 }
